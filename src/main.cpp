@@ -30,12 +30,27 @@
 Data readInstance(char *dir)
 {
     //le as variaveis da instancia
-    int V = 100;
-    int L = 25;
+    int V; // quantidade de vertices
+    int L; // quantidade de cores
 
+    //leitura do arquivo
+    std::ifstream file(dir);
+
+    file >> V >> L;
     Data d(V, L);
 
-    //colocar os dados em d.GLabel[i][j]
+    //inserindo os dados em d.GLabel[i][j]
+    int k = 1; //coluna inicial
+    for (int i = 0; i < V; ++i)
+    {
+        for (int j = k; j < V; ++j)
+        {
+            file >> d.GLabel[i][j];
+            d.GLabel[j][i] = d.GLabel[i][j];
+        }
+
+        ++k;
+    }
 
     return d;
 }
