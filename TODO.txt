@@ -1,0 +1,7 @@
+1 - Estudar o ford-fulkerson -> OK
+2 - Fazer a Leitura da entrada -> OK
+3 - Resolver o problema relaxado ->OK
+    > Problema no makefile > so ta pegando um src file, configura
+    para utilizar o mesmo padrao do BNB-COMB
+4 - Chamar o callback
+5 - Codificar a matriz do fluxo maximo por meio do vetor solucao

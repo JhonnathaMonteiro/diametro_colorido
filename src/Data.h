@@ -24,8 +24,8 @@ public:
       {
          for (int j = 0; j < V; ++j)
          {
-            GLabel[i][j] = 0;
-            RFlows[i][j] = 0;
+            GLabel[i][j] = -1;
+            RFlows[i][j] = -1;
          }
       }
    };

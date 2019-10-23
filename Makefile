@@ -6,16 +6,17 @@
 # ---------------------------------------------------------------------
 
 # Executavel
-CPP_EX = caminho_colorido
+CPP_EX = App
 
-# Codigo fonte .cpp
-CPP_SOURCE = $(wildcard ./src/*.cpp)
+#### diretorios com os source files e com os objs files
+SRCDIR = src
+OBJDIR = objects
+#############################
 
-# Headers
-H_SOURCE = $(wildcard ./src/*.h)
-
-# Objetos
-OBJ = $(subst .cpp,.o,$(subst src,objects,$(CPP_SOURCE)))
+#### lista de todos os srcs e todos os objs
+SRCS = $(wildcard $(SRCDIR)/*.cpp)
+OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCS))
+#############################
 
 # Informacoes do sistema e cplex
 SYSTEM     = x86-64_linux
@@ -32,55 +33,54 @@ CONCERTDIR    = /opt/ibm/ILOG/CPLEX_Studio128/concert
 # Compilador
 # ---------------------------------------------------------------------
 
-CCC = g++ -O0
+CCC := g++ -O0
 
 # ---------------------------------------------------------------------
-# Opcoes do compilador
+# Flags
 # ---------------------------------------------------------------------
 
+# flags de compilacao
 CCOPT = -m64 -O -fPIC -fno-strict-aliasing -fexceptions -DNDEBUG -DIL_STD
+CONCERTINCDIR = $(CONCERTDIR)/include
+CPLEXINCDIR   = $(CPLEXDIR)/include
+CCFLAGS = $(CCOPT) -I$(CPLEXINCDIR) -I$(CONCERTINCDIR)
 
-# ---------------------------------------------------------------------
-# Linkando opcoes e bibliotecas
-# ---------------------------------------------------------------------
-
-CPLEXBINDIR   = $(CPLEXDIR)/bin/$(BINDIST)
+# flags do linker
 CPLEXLIBDIR   = $(CPLEXDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
 CONCERTLIBDIR = $(CONCERTDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
-
-CCLNDIRS  = -L$(CPLEXLIBDIR) -L$(CONCERTLIBDIR)
-CCLNFLAGS = -lconcert -lilocplex -lcplex -lm -lpthread -ldl
-
-
+CCLNFLAGS = -L$(CPLEXLIBDIR) -lconcert -lilocplex -lcplex -L$(CONCERTLIBDIR) -lm -lpthread -ldl
 
 all: objFolder modelFolder $(CPP_EX)
 
-execute: all
-	./$(CPP_EX)
+#### regra principal, gera o executavel
+PMCC: $(OBJS) 
+	@echo  "\033[31m \nLinking all objects files: \033[0m"
+	$(CCC) $(CCFLAGS) $(OBJS) -o $@ $(CCLNFLAGS)
+############################
 
-CONCERTINCDIR = $(CONCERTDIR)/include
-CPLEXINCDIR   = $(CPLEXDIR)/include
+#inclui os arquivos de dependencias
+-include $(OBJS:.o=.d)
 
-# Flags
-CCFLAGS = $(CCOPT) -I$(CPLEXINCDIR) -I$(CONCERTINCDIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@echo  "\033[31m \nCompiling $<: \033[0m"
+	$(CCC) -c $(CCFLAGS) $< -o $@
 
-objFolder:
-	@ mkdir -p objects
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@echo  "\033[31m \nCompiling $<: \033[0m"
+	$(CCC) $(CCFLAGS) -c $< -o $@
+	@echo  "\033[32m \ncreating $< dependency file: \033[0m"
+	$(CCC) $(CCFLAGS) -std=c++0x  -MM $< > $(basename $@).d
+	@mv -f $(basename $@).d $(basename $@).d.tmp 
+	@sed -e 's|.*:|$(basename $@).o:|' < $(basename $@).d.tmp > $(basename $@).d
+	@rm -f $(basename $@).d.tmp
 
-modelFolder:
-	@ mkdir -p model
+teste: PMCC
+	./PMCC ./data/instancia_teste
 
-$(CPP_EX): $(CPP_EX).o
-	$(CCC) $(CCFLAGS) $(CCLNDIRS) -o $@ ./objects/$< $(CCLNFLAGS)
-
-$(CPP_EX).o: ./src/$(CPP_EX).cpp
-	$(CCC) -c $(CCFLAGS) $< -o ./objects/$@
 
 clean :
 
-	@ rm -rf ./objects/*.o
-	@ rmdir -p objects
+	@ rm -rf ./objects/*.o ./objects/*.d
 	@ rm -rf ./model/*.lp
-	@ rmdir -p model
 	/bin/rm -rf $(CPP_EX)
-	/bin/rm -rf *.mps *.ord *.sos *.lp *.sav *.net *.msg *.log *.clp *.o
+	/bin/rm -rf *.mps *.ord *.sos *.lp *.sav *.net *.msg *.log *.clp *.o *.d

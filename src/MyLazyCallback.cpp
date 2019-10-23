@@ -105,4 +105,6 @@ void MyLazyCallback::main()
     getValues(values_l, vars_l);
 
     //fazer a separacao
+    // printf("ENTROU NO MyLazyCallback------------------");
+    // std::cout << "ENTROU NO MyLazyCallback" << std::endl;
 }

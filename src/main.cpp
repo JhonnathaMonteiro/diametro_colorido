@@ -3,7 +3,7 @@
 #include "Data.h"           // Contem instancia e dados usados pelos callbacks de corte
 #include "MyLazyCallback.h" //callback para solucoes inteiras
 
-// Desativa cortes default do cplex
+// Macro para Desativar cortes default do cplex
 #define CPLEX_DISABLE_CUTS(cplex)                   \
     {                                               \
         cplex.setParam(IloCplex::CutPass, -1);      \
@@ -20,6 +20,7 @@
         cplex.setParam(IloCplex::MCFCuts, -1);      \
     }
 
+// Macro para Desativar PRESOLVER do cplex
 #define CPLEX_DISABLE_PRESOLVER(cplex)               \
     {                                                \
         cplex.setParam(IloCplex::RepeatPresolve, 0); \
