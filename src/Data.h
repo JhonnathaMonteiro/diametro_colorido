@@ -13,7 +13,7 @@ public:
    int L;
 
    //instancia para ser lida
-   int GLabel[MAX_V][MAX_V];
+   double GLabel[MAX_V][MAX_V];
 
    //Grafo Residual (Ford-Fulkerson)
    double RFlows[MAX_V][MAX_V];

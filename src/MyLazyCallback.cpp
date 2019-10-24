@@ -102,9 +102,28 @@ void MyLazyCallback::main()
 {
     //faz a leitura dos valores das variaveis
     IloNumArray values_l(getEnv(), vars_l.getSize());
-    getValues(values_l, vars_l);
+    getValues(values_l, vars_l); // <-- Vetor solucao do cplex
+
+    //criando matriz para o problema do fluxo maximo
+    Data fm_d = d;
+    int label_index;
+
+    for (int i = 0; i < fm_d.V; ++i)
+    {
+        for (int j = 0; j < fm_d.V; ++j)
+        {
+            if (j != i)
+            {
+                label_index = fm_d.GLabel[i][j];
+                fm_d.GLabel[i][j] = values_l[label_index];
+                fm_d.RFlows[i][j] = values_l[label_index];
+            }
+        }
+    }
 
     //fazer a separacao
     // printf("ENTROU NO MyLazyCallback------------------");
-    // std::cout << "ENTROU NO MyLazyCallback" << std::endl;
+    // std::cout << "Data fm_d : " << fm_d.RFlows[1][2] << std::endl;
+    // fm_d.GLabel[3][3] = 54;
+    std::cout << "Data fm_d2 : " << fm_d.GLabel[1][1] << std::endl;
 }
