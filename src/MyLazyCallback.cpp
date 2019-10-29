@@ -105,7 +105,7 @@ Cut minCut(Data &d, int s, int t)
     // no grafo original (GLabel)
     for (int i = 0; i < d.V; i++)
         for (int j = 0; j < d.V; j++)
-            if (visited[i] && !visited[j] && d.GLabel[i][j])
+            if (visited[i] && !visited[j] && d.GLabel[i][j] != d.L)
             {
                 std::pair<int, int> edge = std::make_pair(i, j);
                 min_cut.edges.push_back(edge);
@@ -118,8 +118,12 @@ void MyLazyCallback::main()
 {
 
     //-----------Teste para instancia instancia_teste_mini ---------------
+    // vou considerar: 0,...,24 as cores
+    // valores da diagonal principal = -1
+    // e 25 ( = d.L) ausencia de cor (vertice nao conectado)
     int source = 0; //s
     int sink = 5;   //t
+
     //--------------------------------------------------------------------
 
     //faz a leitura dos valores das variaveis
@@ -127,36 +131,41 @@ void MyLazyCallback::main()
     getValues(values_l, vars_l); // <-- Vetor solucao do cplex
 
     //criando matriz para o problema do fluxo maximo
-    Data fm_d = d;
     int label_index;
 
-    for (int row = 0; row < fm_d.V - 1; ++row)
+    //iterando pela matriz triangular superior
+    for (int row = 0; row < d.V - 1; ++row)
     {
-        for (int col = row + 1; col < fm_d.V; ++col)
+        for (int col = row + 1; col < d.V; ++col)
         {
-            label_index = fm_d.GLabel[row][col];
-
-            //matriz com os valores invertidos do resultado do cplex
-            fm_d.GLabel[row][col] = 1 - values_l[label_index];
-            fm_d.GLabel[col][row] = fm_d.GLabel[row][col];
+            label_index = d.GLabel[row][col];
 
             //para o grafo residual
-            fm_d.RFlows[row][col] = 1 - values_l[label_index];
-            fm_d.RFlows[col][row] = fm_d.RFlows[row][col];
+            d.RFlows[row][col] = 1 - values_l[label_index];
+            d.RFlows[col][row] = d.RFlows[row][col];
         }
     }
 
-    Cut min_cut = minCut(fm_d, source, sink);
+    std::cout << "d: " << d.GLabel[0][5] << std::endl;
+    Cut min_cut = minCut(d, source, sink);
 
+    int cor;
+    // IloExpr rExpr(env); // <-- como pegar o env?
     for (auto &edge : min_cut.edges)
     {
-        // DUVIDA: Como criar as restricoes aqui? como pegar a referencia para
-        // as variaveis do modelo (l[i]) ?
-        // TODO: verificar as restricoes violadas (se nao tiver violacao modelo atingiu o otimo ?)
-        // e add elas ao modelo determinar as cores l[cor] e adicionar restricao
-        // do tipo l[cor] + ... >= 1
+        cor = d.GLabel[edge.first][edge.second];
+        // rExpr += vars_l[cor];
 
-        std::cout << edge.first << " : " << edge.second << std::endl;
+        std::cout << edge.first << " : " << edge.second << " COR: " << cor << std::endl;
     }
-    std::cout << "Valor do corte: " << min_cut.value << std::endl;
+
+    // Verificar se deve adicionar o corte
+    // if (rExpr < 1)
+    // {
+    //     // adicionar o corte
+    //     model.add(rExpr >= 1); // <- como pegar o model ?
+    // }
+    // rExpr.end();
+
+    std::cout << "min_cut.value: " << min_cut.value << std::endl;
 }
