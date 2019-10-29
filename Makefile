@@ -75,7 +75,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@rm -f $(basename $@).d.tmp
 
 teste: PMCC
-	./PMCC ./data/instancia_teste_mini
+	./PMCC ./data/instancia_teste
 
 
 clean :

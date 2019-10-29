@@ -3,7 +3,8 @@
 
 #include <ilcplex/ilocplex.h>
 #include <queue>   //usado nas funcoes do ford-fulkerson na BFS
-#include <utility> // std::pair
+#include <utility> // std::pair std::make_pair
+#include <set>     //std::set
 #include <vector>
 #include <iostream>
 #include "Data.h"
@@ -12,6 +13,7 @@
 typedef struct cut
 {
     std::vector<std::pair<int, int>> edges; //arestas do corte
+    std::set<int> colors;                   //cores do corte
     double value;                           //valor do corte
 } Cut;
 

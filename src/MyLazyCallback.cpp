@@ -109,6 +109,7 @@ Cut minCut(Data &d, int s, int t)
             {
                 std::pair<int, int> edge = std::make_pair(i, j);
                 min_cut.edges.push_back(edge);
+                min_cut.colors.insert(d.GLabel[i][j]);
             }
 
     return min_cut;
@@ -122,9 +123,11 @@ void MyLazyCallback::main()
     // valores da diagonal principal = -1
     // e 25 ( = d.L) ausencia de cor (vertice nao conectado)
     int source = 0; //s
-    int sink = 5;   //t
+    int sink = 15;  //t
 
     //--------------------------------------------------------------------
+    IloEnv env = getEnv();
+    IloModel model = getModel();
 
     //faz a leitura dos valores das variaveis
     IloNumArray values_l(getEnv(), vars_l.getSize());
@@ -146,26 +149,25 @@ void MyLazyCallback::main()
         }
     }
 
-    std::cout << "d: " << d.GLabel[0][5] << std::endl;
+    // Min-cut
     Cut min_cut = minCut(d, source, sink);
 
-    int cor;
-    // IloExpr rExpr(env); // <-- como pegar o env?
-    for (auto &edge : min_cut.edges)
+    double colors_sum = 0;
+    IloExpr rExpr(env);
+    for (auto &color : min_cut.colors)
     {
-        cor = d.GLabel[edge.first][edge.second];
-        // rExpr += vars_l[cor];
-
-        std::cout << edge.first << " : " << edge.second << " COR: " << cor << std::endl;
+        std::cout << "CUT COLOR: " << color << std::endl;
+        rExpr += vars_l[color];
+        colors_sum += values_l[color];
     }
 
     // Verificar se deve adicionar o corte
-    // if (rExpr < 1)
-    // {
-    //     // adicionar o corte
-    //     model.add(rExpr >= 1); // <- como pegar o model ?
-    // }
-    // rExpr.end();
-
-    std::cout << "min_cut.value: " << min_cut.value << std::endl;
+    if (colors_sum < 1)
+    {
+        std::cout << "ENTROU NA VIOLACAO DO CORTE" << std::endl;
+        //adicionar o corte
+        model.add(rExpr >= 1);
+    }
+    rExpr.end();
+    std::cout << "RODOU ATE AQUI!" << std::endl;
 }
