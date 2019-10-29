@@ -53,6 +53,7 @@ Data readInstance(char *dir)
     return d;
 }
 
+//Problema do caminho colorido
 int main(int argc, char **argv)
 {
     if (argc != 2)
