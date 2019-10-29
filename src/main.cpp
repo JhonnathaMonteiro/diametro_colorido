@@ -41,16 +41,13 @@ Data readInstance(char *dir)
     Data d(V, L);
 
     //inserindo os dados em d.GLabel[i][j]
-    int k = 1; //coluna inicial
-    for (int i = 0; i < V; ++i)
+    for (int row = 0; row < V - 1; ++row)
     {
-        for (int j = k; j < V; ++j)
+        for (int col = row + 1; col < V; ++col)
         {
-            file >> d.GLabel[i][j];
-            d.GLabel[j][i] = d.GLabel[i][j];
+            file >> d.GLabel[row][col];
+            d.GLabel[col][row] = d.GLabel[row][col];
         }
-
-        ++k;
     }
 
     return d;

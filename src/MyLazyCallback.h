@@ -2,9 +2,18 @@
 #define MY_LAZY_CALLBACK_H
 
 #include <ilcplex/ilocplex.h>
-#include <queue> //usado nas funcoes do ford-fulkerson na BFS
+#include <queue>   //usado nas funcoes do ford-fulkerson na BFS
+#include <utility> // std::pair
+#include <vector>
 #include <iostream>
 #include "Data.h"
+
+// Representacao do corte
+typedef struct cut
+{
+    std::vector<std::pair<int, int>> edges; //arestas do corte
+    double value;                           //valor do corte
+} Cut;
 
 class MyLazyCallback : public IloCplex::LazyConstraintCallbackI
 {

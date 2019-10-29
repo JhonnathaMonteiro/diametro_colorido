@@ -52,8 +52,15 @@ bool bfs(Data &d, int s, int t, int parent[])
     return (visited[t] == true);
 }
 
-// Returns the maximum flow from s to t in the given graph
-void fordFulkerson(Data &d, int s, int t)
+/**
+ * Adapatacao do algoritmo de Ford-Fulkerson para determinar o min-cut
+ * 
+ * @param d estrutura com o grafo original e residual
+ * @param s origem (source)
+ * @param t destino (sink)
+ * @return min_cut (Cut) std::vector<std::pai<int,int>>
+ */
+Cut minCut(Data &d, int s, int t)
 {
 
     int parent[d.V]; // This array is filled by BFS and to store path
@@ -90,16 +97,30 @@ void fordFulkerson(Data &d, int s, int t)
 
     dfs(d, s, visited);
 
-    std::cout << "Min-Cut com peso: " << max_flow << "\n";
+    Cut min_cut;
+    min_cut.value = max_flow;
+
+    // arestas de vertices alcancaveis (da origem) para verices nao-alcancaveis
+    // no grafo original (GLabel)
     for (int i = 0; i < d.V; i++)
         for (int j = 0; j < d.V; j++)
-            if (visited[i] == true && visited[j] == false && d.GLabel[i][j] > 0)
-                std::cout << i << " - " << j << ": " << d.GLabel[i][j] << "\n";
-    std::cout << "\n";
+            if (visited[i] && !visited[j] && d.GLabel[i][j])
+            {
+                std::pair<int, int> edge = std::make_pair(i, j);
+                min_cut.edges.push_back(edge);
+            }
+
+    return min_cut;
 }
 
 void MyLazyCallback::main()
 {
+
+    //-----------Teste para instancia instancia_teste_mini ---------------
+    int source = 0; //s
+    int sink = 5;   //t
+    //--------------------------------------------------------------------
+
     //faz a leitura dos valores das variaveis
     IloNumArray values_l(getEnv(), vars_l.getSize());
     getValues(values_l, vars_l); // <-- Vetor solucao do cplex
@@ -108,22 +129,28 @@ void MyLazyCallback::main()
     Data fm_d = d;
     int label_index;
 
-    for (int i = 0; i < fm_d.V; ++i)
+    for (int row = 0; row < fm_d.V - 1; ++row)
     {
-        for (int j = 0; j < fm_d.V; ++j)
+        for (int col = row + 1; col < fm_d.V; ++col)
         {
-            if (j != i)
-            {
-                label_index = fm_d.GLabel[i][j];
-                fm_d.GLabel[i][j] = values_l[label_index];
-                fm_d.RFlows[i][j] = values_l[label_index];
-            }
+            label_index = fm_d.GLabel[row][col];
+
+            //matriz com os valores invertidos do resultado do cplex
+            fm_d.GLabel[row][col] = 1 - values_l[label_index];
+            fm_d.GLabel[col][row] = fm_d.GLabel[row][col];
+
+            //para o grafo residual
+            fm_d.RFlows[row][col] = 1 - values_l[label_index];
+            fm_d.RFlows[col][row] = fm_d.RFlows[row][col];
         }
     }
 
-    //fazer a separacao
-    // printf("ENTROU NO MyLazyCallback------------------");
-    // std::cout << "Data fm_d : " << fm_d.RFlows[1][2] << std::endl;
-    // fm_d.GLabel[3][3] = 54;
-    std::cout << "Data fm_d2 : " << fm_d.GLabel[1][1] << std::endl;
+    Cut min_cut = minCut(fm_d, source, sink);
+
+    for (auto &edge : min_cut.edges)
+    {
+        //TODO: verificar as restricoes violadas e add elas ao modelo
+
+        std::cout << edge.first << " : " << edge.second << std::endl;
+    }
 }
