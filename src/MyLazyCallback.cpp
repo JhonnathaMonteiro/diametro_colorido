@@ -98,7 +98,8 @@ Cut minCut(Data &d, int s, int t)
     dfs(d, s, visited);
 
     Cut min_cut;
-    min_cut.value = max_flow;
+    min_cut.value = max_flow; //nao tenho ctz se tem sentido esse max_flow
+                              //ou se precisa dele
 
     // arestas de vertices alcancaveis (da origem) para verices nao-alcancaveis
     // no grafo original (GLabel)
@@ -149,8 +150,13 @@ void MyLazyCallback::main()
 
     for (auto &edge : min_cut.edges)
     {
-        //TODO: verificar as restricoes violadas e add elas ao modelo
+        // DUVIDA: Como criar as restricoes aqui? como pegar a referencia para
+        // as variaveis do modelo (l[i]) ?
+        // TODO: verificar as restricoes violadas (se nao tiver violacao modelo atingiu o otimo ?)
+        // e add elas ao modelo determinar as cores l[cor] e adicionar restricao
+        // do tipo l[cor] + ... >= 1
 
         std::cout << edge.first << " : " << edge.second << std::endl;
     }
+    std::cout << "Valor do corte: " << min_cut.value << std::endl;
 }

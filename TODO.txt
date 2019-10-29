@@ -1,1 +1,1 @@
-1 - Estudar o ford-fulkerson -> OK
+1 - Inserir as restricoes no modelo!
