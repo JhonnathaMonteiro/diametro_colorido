@@ -122,12 +122,20 @@ void MyLazyCallback::main()
     // vou considerar: 0,...,24 as cores
     // valores da diagonal principal = -1
     // e 25 ( = d.L) ausencia de cor (vertice nao conectado)
+    // instancia_teste_mini:
+    //
+    //  -1  5  0  0 25  4
+    //   5 -1 16  4  3 25
+    //   0 16 -1  1  1 16
+    //   0  4  1 -1 20  2
+    //  25  3  1 20 -1  0
+    //   4 25 16  2  0 -1
+
     int source = 0; //s
-    int sink = 15;  //t
+    int sink = 4;   //t
 
     //--------------------------------------------------------------------
     IloEnv env = getEnv();
-    IloModel model = getModel();
 
     //faz a leitura dos valores das variaveis
     IloNumArray values_l(getEnv(), vars_l.getSize());
@@ -156,18 +164,38 @@ void MyLazyCallback::main()
     IloExpr rExpr(env);
     for (auto &color : min_cut.colors)
     {
-        std::cout << "CUT COLOR: " << color << std::endl;
+        // std::cout << "CUT COLORS: " << color << std::endl;
         rExpr += vars_l[color];
         colors_sum += values_l[color];
     }
 
+    // std::cout << "colors_sum: " << colors_sum << std::endl;
     // Verificar se deve adicionar o corte
-    if (colors_sum < 1)
+    if (colors_sum < 1) // <- Acho que ta errado
     {
-        std::cout << "ENTROU NA VIOLACAO DO CORTE" << std::endl;
         //adicionar o corte
-        model.add(rExpr >= 1);
+        add(rExpr >= 1);
     }
     rExpr.end();
-    std::cout << "RODOU ATE AQUI!" << std::endl;
+
+    //deletar-----------------------------------------------------
+    for (int i; i < 24; ++i)
+    {
+        std::cout << values_l[i] << " ";
+    }
+    std::cout << std::endl;
+    for (int row = 0; row < d.V; ++row)
+    {
+        for (int col = 0; col < d.V; ++col)
+        {
+            std::cout << d.RFlows[row][col] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    for (auto &edge : min_cut.edges)
+    {
+        std::cout << edge.first << " : " << edge.second << std::endl;
+    }
+    //deletar-----------------------------------------------------
 }

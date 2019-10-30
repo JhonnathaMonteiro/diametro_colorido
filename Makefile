@@ -77,6 +77,11 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 teste: PMCC
 	./PMCC ./data/instancia_teste
 
+teste_mini: PMCC
+	./PMCC ./data/instancia_teste_mini
+
+debug: CCFLAGS += -DDEBUG -g
+debug: PMCC
 
 clean :
 
