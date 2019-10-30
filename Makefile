@@ -13,10 +13,11 @@ TARGET   = PMCC
 
 # diretorios com os source files e com os objs files
 SRCDIR      = src
-BUILD_DIR   = ./build
+BUILD_DIR   = build
+MODELDIR    = model
 OBJDIR      = $(BUILD_DIR)/objects
 APPDIR      = $(BUILD_DIR)/apps
-INCLUDE  = -Iinclude/
+INCLUDE     = -Iinclude/
 
 # lista de todos os srcs e todos os objs
 SRCS = $(wildcard $(SRCDIR)/*.cpp)
@@ -49,7 +50,13 @@ CCLNFLAGS = -L$(CPLEXLIBDIR) -lconcert -lilocplex -lcplex -L$(CONCERTLIBDIR)\
 ################################################################
 
 ############# REGRAS PARA GERAR O EXECUTAVEL ###################
-all: build $(APPDIR)/$(TARGET)
+all: dirs $(APPDIR)/$(TARGET)
+
+dirs:
+	@mkdir -p $(MODELDIR)
+	@mkdir -p $(APPDIR)
+	@mkdir -p $(OBJDIR)
+
 
 $(APPDIR)/$(TARGET): $(OBJS) 
 	@echo  "\033[31m \nLinking all objects files: \033[0m"
@@ -67,14 +74,14 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 
 ########################  TESTES ###############################
-test: $(APPDIR)/$(TARGET)
+test: all
 	./$(APPDIR)/$(TARGET) ./data/instancia_teste_mini
 ################################################################
 
 
 ################### REGRA PARA DEBUGAVEL #######################
 debug: CCFLAGS += -DDEBUG -g
-debug: $(APPDIR)/$(TARGET)
+debug: all
 ################################################################
 
 #################### REGRA PARA RELEASE ########################

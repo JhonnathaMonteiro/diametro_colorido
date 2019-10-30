@@ -123,6 +123,9 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
+    // Exportando o model
+    solver.exportModel("./model/PMCC.lp");
+
     //free memory
     solver.end();
     env.end();
