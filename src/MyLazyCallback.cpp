@@ -131,6 +131,8 @@ void MyLazyCallback::main()
     //  25  3  1 20 -1  0
     //   4 25 16  2  0 -1
 
+    // int source = 1; //s
+    // int sink = 5;   //t
     int source = 0; //s
     int sink = 4;   //t
 
@@ -152,7 +154,8 @@ void MyLazyCallback::main()
             label_index = d.GLabel[row][col];
 
             //para o grafo residual
-            d.RFlows[row][col] = 1 - values_l[label_index];
+            // d.RFlows[row][col] = 1 - values_l[label_index]; // <-- Assim n funciona (inversao dos valores)
+            d.RFlows[row][col] = values_l[label_index]; // <-- Assim funciona (sem inversao dos valores)
             d.RFlows[col][row] = d.RFlows[row][col];
         }
     }
@@ -164,12 +167,10 @@ void MyLazyCallback::main()
     IloExpr rExpr(env);
     for (auto &color : min_cut.colors)
     {
-        // std::cout << "CUT COLORS: " << color << std::endl;
         rExpr += vars_l[color];
         colors_sum += values_l[color];
     }
 
-    // std::cout << "colors_sum: " << colors_sum << std::endl;
     // Verificar se deve adicionar o corte
     if (colors_sum < 1) // <- Acho que ta errado
     {
@@ -177,25 +178,4 @@ void MyLazyCallback::main()
         add(rExpr >= 1);
     }
     rExpr.end();
-
-    //deletar-----------------------------------------------------
-    for (int i; i < 24; ++i)
-    {
-        std::cout << values_l[i] << " ";
-    }
-    std::cout << std::endl;
-    for (int row = 0; row < d.V; ++row)
-    {
-        for (int col = 0; col < d.V; ++col)
-        {
-            std::cout << d.RFlows[row][col] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    for (auto &edge : min_cut.edges)
-    {
-        std::cout << edge.first << " : " << edge.second << std::endl;
-    }
-    //deletar-----------------------------------------------------
 }
