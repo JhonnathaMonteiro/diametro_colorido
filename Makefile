@@ -67,10 +67,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 
 ########################  TESTES ###############################
-teste: $(APPDIR)/$(TARGET)
-	./$(APPDIR)/$(TARGET) ./data/instancia_teste
-
-teste_mini: $(APPDIR)/$(TARGET)
+test: $(APPDIR)/$(TARGET)
 	./$(APPDIR)/$(TARGET) ./data/instancia_teste_mini
 ################################################################
 
