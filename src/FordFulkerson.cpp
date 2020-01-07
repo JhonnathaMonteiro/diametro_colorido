@@ -26,7 +26,6 @@ bool bfs(Data &d, int s, int t, int parent[])
     {
         int u = q.front();
         q.pop();
-
         for (int v = 0; v < d.V; v++)
         {
             if (visited[v] == false && d.RFlows[u][v] > 0)
@@ -37,12 +36,11 @@ bool bfs(Data &d, int s, int t, int parent[])
             }
         }
     }
-
     return (visited[t] == true);
 }
 
 /**
- * Algoritmo de Ford-Fulkerson
+ * Algoritmo Ford-Fulkerson
  * 
  * @param d estrutura com o grafo original e residual
  * @param s origem (source)

@@ -75,6 +75,9 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 ########################  TESTES ###############################
 test: all
+	./$(APPDIR)/$(TARGET) ./data/9
+
+test_mini: all
 	./$(APPDIR)/$(TARGET) ./data/instancia_teste_mini
 ################################################################
 

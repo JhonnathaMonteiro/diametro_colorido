@@ -1,14 +1,12 @@
 1 - Sugestão de Felipe:
 
-"Jhonnatha, separa a implementação do Ford-Fulkerson e do mincut.  É possível 
-que exista mais de 1 mincut no grafo residual. Então, você deve adicionar todos 
-eles. Faz assim: pega o primeiro mincut, salva, coloca as arestas do corte com 
-valor diferente de 0 e chama a função para encontrar mincuts novamente ... faz
-isso até que os vértices s e t fiquem no mesmo conjunto, ou seja, não existem 
-mais mincuts naquela solução."
+Testar os PMCC
+  [] Pequenas
+  [] Medias
+  [] Grandes
 
-"Aí depois checa quais mincuts foram violados e adiciona o corte correspondente"
+Variar Source & Sink para encontrar o diametro
+  [] Fixar source e variar diametro
+  [] Descartar vertices adjacentes ?
+  
 
-"nao inverter a matriz residual vai gerar cortes que levam a solucao ótima. Mas, 
-espera-se que os cortes gerados pela matriz residual invertida produzam uma 
-relaxação mais forte (Depois voce faz experimentos pra v se isso se confirma)."
