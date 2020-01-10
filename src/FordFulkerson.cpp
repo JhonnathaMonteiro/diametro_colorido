@@ -50,21 +50,19 @@ bool bfs(Data &d, int s, int t, int parent[])
 void fordFulkerson(Data &d, int s, int t)
 {
 
-    int parent[d.V]; // This array is filled by BFS and to store path
+    int parent[d.V]; // Array para armazenar o path, preenchido pela BFS
 
-    // Augment the flow while tere is path from source to sink
+    // Augment flow enquanto existir um caminho entre source e sink
     while (bfs(d, s, t, parent))
     {
-
-        // Find the maximum flow through the path found on BFS.
+        // Encontrando o fluxo maximo pelo caminho encotrado na BFS
         double path_flow = std::numeric_limits<double>::max();
         for (int v = t; v != s; v = parent[v])
         {
             int u = parent[v];
             path_flow = std::min(path_flow, d.RFlows[u][v]);
         }
-
-        // update residual capacities
+        // Atualizar as capacidades residuais
         for (int v = t; v != s; v = parent[v])
         {
             int u = parent[v];

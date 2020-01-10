@@ -1,7 +1,10 @@
 #include <ilcplex/ilocplex.h>
+#include <queue>
+#include <iostream>
+#include <limits>
 
 #include "Data.h"           // Contem instancia e dados usados pelos callbacks de corte
-#include "MyLazyCallback.h" //callback para solucoes inteiras
+#include "MyLazyCallback.h" // callback para solucoes inteiras
 
 // Macro para Desativar cortes default do cplex
 #define CPLEX_DISABLE_CUTS(cplex)                   \
@@ -26,15 +29,31 @@
         cplex.setParam(IloCplex::RepeatPresolve, 0); \
         cplex.setParam(IloCplex::AggInd, 0);         \
         cplex.setParam(IloCplex::PreInd, false);     \
-    }
+        // cplex.setParam(IloCplex::Param::Preprocessing::Linear, 0); \ <-- Acho que precisa pro UserCutCallbackI
+}
 
 Data readInstance(char *dir)
 {
-    //le as variaveis da instancia
+
+    //-----------Teste para instancia instancia_teste_mini ---------------
+    // vou considerar: 0,...,24 as cores
+    // valores da diagonal principal = -1
+    // e 25 ( = d.L) ausencia de cor (vertice nao conectado)
+    // instancia_teste_mini:
+    //
+    //  -1  5  0  0 25  4
+    //   5 -1 16  4  3 25
+    //   0 16 -1  1  1 16
+    //   0  4  1 -1 20  2
+    //  25  3  1 20 -1  0
+    //   4 25 16  2  0 -1
+    //--------------------------------------------------------------------
+
+    // le as variaveis da instancia
     int V; // quantidade de vertices
     int L; // quantidade de cores
 
-    //leitura do arquivo
+    // leitura do arquivo
     std::ifstream file(dir);
 
     file >> V >> L;
@@ -71,7 +90,7 @@ int main(int argc, char **argv)
     IloEnv env;
     IloModel model(env);
 
-    //create variables l[i] = 1 if node i on solution
+    //create variables l[i] = 1 if color i on solution
     IloBoolVarArray l(env, d.L);
     for (int i = 0; i < d.L; ++i)
     {
@@ -81,52 +100,53 @@ int main(int argc, char **argv)
         model.add(l[i]);
     }
 
-    //define funcao objetivo (minimizar numero de cores usadas)
+    // define funcao objetivo (minimizar numero de cores usadas)
     IloExpr obj(env);
     for (int i = 0; i < d.L; ++i)
         obj += l[i];
     model.add(IloMinimize(env, obj));
     obj.end();
 
-    //cria o solver
-    IloCplex solver(model);
-
-    //modifica algumas configuracoes do solver
-    solver.setParam(IloCplex::Threads, 1);
-    CPLEX_DISABLE_CUTS(solver);
-    CPLEX_DISABLE_PRESOLVER(solver);
-
-    //adiciona callback ao solver
-    MyLazyCallback *lazy = new (env) MyLazyCallback(env, l, d);
-    solver.use(lazy);
-
-    //solve
-    solver.solve();
-
-    //leitura de dados do solver
-    int nos = solver.getNnodes();
-    double LB = solver.getBestObjValue();
-    double UB = solver.getObjValue();
-    double gap = solver.getMIPRelativeGap();
-
-    //prints
-    printf("DADOS:\n");
-    printf("UB: %.2lf\n", UB);
-    printf("LB: %.2lf\n", LB);
-    printf("GAP: %.2lf\n", gap);
-    printf("Nodes: %d\n", nos);
-
-    printf("SOL: \n");
-    for (int i = 0; i < d.L; ++i)
+    //-------------------------- DIAMETER LOOP -----------------------
+    double diameter = -1;
+    int source, sink;
+    for (source = 0; source < d.V - 1; source++)
     {
-        printf("%.0lf ", solver.getValue(l[i]));
+        for (sink = source + 1; sink < d.V; sink++)
+        {
+            //cria o solver
+            IloCplex solver(model);
+
+            // modifica algumas configuracoes do solver
+            solver.setParam(IloCplex::Threads, 1);
+            CPLEX_DISABLE_CUTS(solver);
+            CPLEX_DISABLE_PRESOLVER(solver);
+
+            // adiciona callback ao solver
+            MyLazyCallback *lazy = new (env) MyLazyCallback(env, l, d, source, sink);
+            solver.use(lazy);
+
+            // solve
+            solver.solve();
+
+            // status
+            auto status = solver.getStatus();
+
+            if (status == IloAlgorithm::Optimal)
+            {
+                /* code */
+                double ObjValue = solver.getBestObjValue();
+                if (ObjValue > diameter)
+                {
+                    diameter = ObjValue;
+                }
+            }
+            delete lazy;
+            solver.end();
+        }
     }
-    printf("\n");
+    //---------------------------------------------------------------
 
-    // Exportando o model
-    solver.exportModel("./model/PMCC.lp");
-
-    //free memory
-    solver.end();
+    std::cout << "Diametro: " << diameter << std::endl;
     env.end();
 }

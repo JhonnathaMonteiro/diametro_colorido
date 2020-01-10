@@ -1,12 +1,14 @@
 1 - Sugestão de Felipe:
 
 Testar os PMCC
-  [] Pequenas
-  [] Medias
-  [] Grandes
+  [X] Pequenas
+  [X] Medias
+  [X] Grandes
+
+Mudar o callback
 
 Variar Source & Sink para encontrar o diametro
   [] Fixar source e variar diametro
   [] Descartar vertices adjacentes ?
-  
+
 

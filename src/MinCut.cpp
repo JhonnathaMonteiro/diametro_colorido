@@ -2,7 +2,7 @@
 
 #include "MinCut.h"
 
-//monta o mincut (todos os vertices alcancaveis a partir de s no grafo residual)
+// monta o mincut (todos os vertices alcancaveis a partir de s no grafo residual)
 void dfs(Data &d, int s, bool visited[])
 {
     visited[s] = true;
@@ -21,14 +21,11 @@ void dfs(Data &d, int s, bool visited[])
 Cut minCut(Data &d, int s, int t)
 {
 
-    int parent[d.V]; // This array is filled by BFS and to store path
-
-    //Encontra o mincut s-t a partir do grafo residual
+    // Encontra o mincut s-t a partir do grafo residual
+    int parent[d.V];
     bool visited[d.V];
     std::fill(visited, visited + d.V, 0);
-
     dfs(d, s, visited);
-
     Cut min_cut;
 
     // arestas de vertices alcancaveis (da origem) para verices nao-alcancaveis
@@ -41,6 +38,5 @@ Cut minCut(Data &d, int s, int t)
                 min_cut.edges.push_back(edge);
                 min_cut.colors.insert(d.GLabel[i][j]);
             }
-
     return min_cut;
 }

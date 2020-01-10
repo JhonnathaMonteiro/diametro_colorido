@@ -3,39 +3,22 @@
 #include "MinCut.h"
 
 //construtor da classe
-MyLazyCallback::MyLazyCallback(IloEnv env, const IloBoolVarArray &ref_l, Data &d) : IloCplex::LazyConstraintCallbackI(env), d(d)
+// MyLazyCallback::MyLazyCallback(IloEnv env, const IloBoolVarArray &ref_l, Data &d, int source, int sink) : IloCplex::UserCutCallbackI(env), d(d)
+MyLazyCallback::MyLazyCallback(IloEnv env, const IloBoolVarArray &ref_l, Data &d, int source, int sink) : IloCplex::LazyConstraintCallbackI(env), d(d)
 {
     vars_l = ref_l;
+    _source = source;
+    _sink = sink;
 }
 
 //metodo que retorna copia do callback. (Exigencia do CPlex)
 IloCplex::CallbackI *MyLazyCallback::duplicateCallback() const
 {
-    return new (getEnv()) MyLazyCallback(getEnv(), vars_l, d);
+    return new (getEnv()) MyLazyCallback(getEnv(), vars_l, d, _source, _sink);
 }
 
 void MyLazyCallback::main()
 {
-
-    //-----------Teste para instancia instancia_teste_mini ---------------
-    // vou considerar: 0,...,24 as cores
-    // valores da diagonal principal = -1
-    // e 25 ( = d.L) ausencia de cor (vertice nao conectado)
-    // instancia_teste_mini:
-    //
-    //  -1  5  0  0 25  4
-    //   5 -1 16  4  3 25
-    //   0 16 -1  1  1 16
-    //   0  4  1 -1 20  2
-    //  25  3  1 20 -1  0
-    //   4 25 16  2  0 -1
-
-    // int source = 1; //s
-    // int sink = 5;   //t
-    int source = 0; //s
-    int sink = 4;   //t
-
-    //--------------------------------------------------------------------
     IloEnv env = getEnv();
 
     //faz a leitura dos valores das variaveis
@@ -52,23 +35,16 @@ void MyLazyCallback::main()
         {
             label_index = d.GLabel[row][col];
 
-            //para o grafo residual
-
-            // COM INVERSAO DOS VALORES DA MATRIZ ----------------------------------------------------------
-            // d.RFlows[row][col] = 1 - values_l[label_index]; // <-- Assim n funciona (inversao dos valores)
-
-            // SEM INVERSAO DOS VALORES DA MATRIZ ----------------------------------------------------------
-            d.RFlows[row][col] = values_l[label_index]; // <-- Assim funciona (sem inversao dos valores)
-
-            d.RFlows[col][row] = d.RFlows[row][col];
+            // SEM INVERSAO DOS VALORES DA MATRIZ -------
+            d.RFlows[row][col] = d.RFlows[col][row] = values_l[label_index];
         }
     }
 
     // Ford-Fulkerson
-    fordFulkerson(d, sink, source);
+    fordFulkerson(d, _sink, _source);
 
     // Min-cut
-    Cut min_cut = minCut(d, sink, source);
+    Cut min_cut = minCut(d, _sink, _source);
 
     // Criando a restricao do corte
     double colors_sum = 0;
