@@ -29,8 +29,8 @@
         cplex.setParam(IloCplex::RepeatPresolve, 0); \
         cplex.setParam(IloCplex::AggInd, 0);         \
         cplex.setParam(IloCplex::PreInd, false);     \
-        // cplex.setParam(IloCplex::Param::Preprocessing::Linear, 0); \ <-- Acho que precisa pro UserCutCallbackI
-}
+    }
+// cplex.setParam(IloCplex::Param::Preprocessing::Linear, 0); \
 
 Data readInstance(char *dir)
 {
@@ -49,11 +49,11 @@ Data readInstance(char *dir)
     //   4 25 16  2  0 -1
     //--------------------------------------------------------------------
 
-    // le as variaveis da instancia
+    //le as variaveis da instancia
     int V; // quantidade de vertices
     int L; // quantidade de cores
 
-    // leitura do arquivo
+    //leitura do arquivo
     std::ifstream file(dir);
 
     file >> V >> L;
