@@ -2,7 +2,6 @@
 #include "FordFulkerson.h"
 #include "MinCut.h"
 
-//construtor da classe
 // MyLazyCallback::MyLazyCallback(IloEnv env, const IloBoolVarArray &ref_l, Data &d, int source, int sink) : IloCplex::UserCutCallbackI(env), d(d)
 MyLazyCallback::MyLazyCallback(IloEnv env, const IloBoolVarArray &ref_l, Data &d, int source, int sink) : IloCplex::LazyConstraintCallbackI(env), d(d)
 {
@@ -11,7 +10,7 @@ MyLazyCallback::MyLazyCallback(IloEnv env, const IloBoolVarArray &ref_l, Data &d
     _sink = sink;
 }
 
-//metodo que retorna copia do callback. (Exigencia do CPlex)
+// boilerplate (Exigencia do CPlex)
 IloCplex::CallbackI *MyLazyCallback::duplicateCallback() const
 {
     return new (getEnv()) MyLazyCallback(getEnv(), vars_l, d, _source, _sink);
@@ -21,14 +20,13 @@ void MyLazyCallback::main()
 {
     IloEnv env = getEnv();
 
-    //faz a leitura dos valores das variaveis
+    // Leitura dos valores das variaveis
     IloNumArray values_l(getEnv(), vars_l.getSize());
     getValues(values_l, vars_l); // <-- Vetor solucao do cplex
 
-    //criando matriz para o problema do fluxo maximo
+    // Criando matriz para o problema do fluxo maximo
     int label_index;
 
-    //iterando pela matriz triangular superior
     for (int row = 0; row < d.V - 1; ++row)
     {
         for (int col = row + 1; col < d.V; ++col)

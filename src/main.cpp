@@ -3,8 +3,9 @@
 #include <iostream>
 #include <limits>
 
-#include "Data.h"           // Contem instancia e dados usados pelos callbacks de corte
-#include "MyLazyCallback.h" // callback para solucoes inteiras
+#include "Data.h" // Contem instancia e dados usados pelos callbacks de corte
+#include "MyLazyCallback.h"
+#include "MyUserCallback.h"
 
 // Macro para Desativar cortes default do cplex
 #define CPLEX_DISABLE_CUTS(cplex)                   \
@@ -35,7 +36,7 @@
 Data readInstance(char *dir)
 {
 
-    //-----------Teste para instancia instancia_teste_mini ---------------
+    //----------- EXEMPLO DE INSTANCIA -----------------------------------
     // vou considerar: 0,...,24 as cores
     // valores da diagonal principal = -1
     // e 25 ( = d.L) ausencia de cor (vertice nao conectado)
@@ -49,17 +50,15 @@ Data readInstance(char *dir)
     //   4 25 16  2  0 -1
     //--------------------------------------------------------------------
 
-    //le as variaveis da instancia
+    // Ler as variaveis da instancia
     int V; // quantidade de vertices
     int L; // quantidade de cores
 
-    //leitura do arquivo
     std::ifstream file(dir);
-
     file >> V >> L;
     Data d(V, L);
 
-    //inserindo os dados em d.GLabel[i][j]
+    // Inserindo os dados em d.GLabel[i][j]
     for (int row = 0; row < V - 1; ++row)
     {
         for (int col = row + 1; col < V; ++col)
@@ -72,7 +71,7 @@ Data readInstance(char *dir)
     return d;
 }
 
-//Problema do caminho colorido
+// Problema do caminho colorido
 int main(int argc, char **argv)
 {
     if (argc != 2)
@@ -83,14 +82,14 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    //faz a leitura da instancia e retorna um objeto com os dados preenchidos
+    // faz a leitura da instancia e retorna um objeto com os dados preenchidos
     Data d = readInstance(argv[1]);
 
-    //cria o modelo do cplex
+    // cria o modelo do cplex
     IloEnv env;
     IloModel model(env);
 
-    //create variables l[i] = 1 if color i on solution
+    // create variables l[i] = 1 if color i on solution
     IloBoolVarArray l(env, d.L);
     for (int i = 0; i < d.L; ++i)
     {
@@ -110,23 +109,28 @@ int main(int argc, char **argv)
     //-------------------------- DIAMETER LOOP -----------------------
     double diameter = -1;
     int source, sink;
+
+    // cria o solver
+    IloCplex solver(model);
+
+    // modifica algumas configuracoes do solver
+    solver.setParam(IloCplex::Threads, 1);
+    CPLEX_DISABLE_CUTS(solver);
+    CPLEX_DISABLE_PRESOLVER(solver);
+
     for (source = 0; source < d.V - 1; source++)
     {
         for (sink = source + 1; sink < d.V; sink++)
         {
-            //cria o solver
-            IloCplex solver(model);
 
-            // modifica algumas configuracoes do solver
-            solver.setParam(IloCplex::Threads, 1);
-            CPLEX_DISABLE_CUTS(solver);
-            CPLEX_DISABLE_PRESOLVER(solver);
-
-            // adiciona callback ao solver
+            // adiciona os callbacks ao solver
             MyLazyCallback *lazy = new (env) MyLazyCallback(env, l, d, source, sink);
-            solver.use(lazy);
+            MyUserCallback *user = new (env) MyUserCallback(env, l, d, source, sink);
 
-            // solve
+            solver.use(lazy);
+            solver.use(user);
+
+            // solver
             solver.solve();
 
             // status
@@ -134,19 +138,21 @@ int main(int argc, char **argv)
 
             if (status == IloAlgorithm::Optimal)
             {
-                /* code */
                 double ObjValue = solver.getBestObjValue();
                 if (ObjValue > diameter)
                 {
                     diameter = ObjValue;
                 }
             }
+            // Limpando o modelo;
+            solver.clearLazyConstraints();
+            solver.clearUserCuts();
             delete lazy;
-            solver.end();
         }
     }
+    solver.end();
     //---------------------------------------------------------------
 
-    std::cout << "Diametro: " << diameter << std::endl;
+    std::cout << "DIAMETRO: " << diameter << std::endl;
     env.end();
 }
